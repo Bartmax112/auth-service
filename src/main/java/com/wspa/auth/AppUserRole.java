@@ -1,4 +1,4 @@
-package com.dataart.internship.banking.auth;
+package com.wspa.auth;
 
 enum AppUserRole {
     CASHIER,

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -33,26 +34,35 @@ class UserService {
         this.authRedisTemplate = authRedisTemplate;
     }
 
-    void login(AuthDto authDto) {
+    LoginResponse login(AuthDto authDto) {
         var user = userDatabase.findUserByUsername(authDto.getUsername());
 
         if (user.isEmpty() || !bCryptPasswordEncoder.matches(authDto.getPassword(), user.get().getPassword())) {
             throw new AuthorizationException(authDto.getUsername());
         }
+        var userToken = UUID.randomUUID();
 
+        var value = AuthRedisDto.builder()
+                .userId(user.get().getUserId())
+                .role(user.get().getRole())
+                .build();
+
+        authRedisTemplate.put(userToken.toString(), value, SESSION_TIME, TimeUnit.MINUTES);
         addAuthenticationTokenToSpringContext(authDto);
+
+        return new LoginResponse(userToken.toString(), user.get().getUserId().toString());
     }
 
     void logout(UUID token) {
         var isSuccess = authRedisTemplate.delete(token.toString());
-        if (isSuccess == null || !isSuccess) {
+        if(isSuccess == null || !isSuccess){
             throw new UserNotLoggedException(token.toString());
         }
     }
 
     void deactivateUser(UUID userId) {
         var rowsAffected = userDatabase.deactivateUser(userId);
-        if (rowsAffected == 0) {
+        if( rowsAffected == 0){
             throw new UserNotFoundException(userId);
         }
     }

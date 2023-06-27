@@ -20,4 +20,5 @@ class UserDto implements Serializable {
     @NonNull
     private String password;
     private Boolean active;
+    private AppUserRole role;
 }
