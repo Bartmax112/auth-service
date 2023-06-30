@@ -1,8 +1,8 @@
 version: '2.4'
 services:
   banking-system:
-    image: dragho112/banking-system:0.0.1-SNAPSHOT
-    container_name: banking-system-v2
+    image: dragho112/client-app:1.0-SNAPSHOT
+    container_name: client-app
     depends_on:
       banking-db:
         condition: service_healthy
@@ -16,7 +16,7 @@ services:
 
   banking-db:
     image: postgres
-    container_name: banking-db
+    container_name: client-db
     ports:
       - 11222:5432
     environment:
@@ -36,8 +36,8 @@ services:
       - 6379:6379
 
   banking-auth:
-    image: dragho112/banking-auth:0.0.1-SNAPSHOT
-    container_name: banking-auth
+    image: dragho112/auth-system:0.0.1-SNAPSHOT
+    container_name: auth-system
     hostname: redis
     ports:
       - 8082:8082
