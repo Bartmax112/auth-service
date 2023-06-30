@@ -1,7 +1,7 @@
 version: '2.4'
 services:
-  banking-system:
-    image: dragho112/client-app:1.0-SNAPSHOT
+  client-system:
+    image: client-app
     container_name: client-app
     depends_on:
       banking-db:
@@ -14,7 +14,7 @@ services:
       - 8081:8081
     restart: on-failure
 
-  banking-db:
+  client-db:
     image: postgres
     container_name: client-db
     ports:
@@ -35,8 +35,8 @@ services:
     ports:
       - 6379:6379
 
-  banking-auth:
-    image: dragho112/auth-system:0.0.1-SNAPSHOT
+  auth-system:
+    image: auth-system
     container_name: auth-system
     hostname: redis
     ports:
