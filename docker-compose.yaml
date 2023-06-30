@@ -1,7 +1,73 @@
 version: '2.4'
 services:
+  banking-system:
+    image: dragho112/banking-system:0.0.1-SNAPSHOT
+    container_name: banking-system-v2
+    depends_on:
+      banking-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://banking-db:5432/
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    ports:
+      - 8081:8081
+    restart: on-failure
+
+  banking-db:
+    image: postgres
+    container_name: banking-db
+    ports:
+      - 11222:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis-server:
     container_name: redisDb
     image: 'redis'
     ports:
       - 6379:6379
+
+  banking-auth:
+    image: dragho112/banking-auth:0.0.1-SNAPSHOT
+    container_name: banking-auth
+    hostname: redis
+    ports:
+      - 8082:8082
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_RABBITMQ_HOST=rabbitmq
+
+  rabbitmq:
+    image: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  auth-db:
+    image: postgres
+    container_name: auth-db
+    ports:
+      - 11223:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
